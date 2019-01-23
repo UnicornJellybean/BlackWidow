@@ -17,17 +17,21 @@
 #include "adafruit-sht31.h"
 #include "I2CSoilMoistureSensor.h"
 
- const int analogInPin = A0;            // Sensor output
- int minADC = 1018;                        // replace with min ADC value read in air
- int maxADC = 3486;                      // replace with max ADC value read fully submerged in water 
-                                        // (usually 600)
+int i, j, k;                                   // allows for output to be recorded every 5 and 30 seconds
+// int Soilw1, Soilw2, Soilw3, Soilw4, Soilw5;     // 5 moisture values
+// int Cat1, Cat2, Cat3, Cat4, Cat5;               // 5 moisture values
+
+ const int analogInPin = A0;                // Sensor output
+ int minADC = 1018;                         // replace with min ADC value read in air
+ int maxADC = 3486;                         // replace with max ADC value read fully submerged in water 
+                                            // (usually 600)
  int moistureValue, mappedValue;
 
 
  I2CSoilMoistureSensor sensor(0X20);
  const int analogCatnipPin = SDA;
  int CatminADC = 207;
- int CatmaxADC = 722;                   // 3.3V or 5V
+ int CatmaxADC = 722;                       // 3.3V or 5V
 
  int CatnipmoistureValue, Catnipmappedvalue;
 
@@ -38,6 +42,9 @@ void setup() {
     Serial.begin(9600);                 // initialize serial communications at 9600 bps
     sensor.begin();                     // wake up the Catnip
     delay(100);                         // wait for the sensors to be ready
+
+    i=0;                                            // start at 0 seconds
+    j=0;                                            // start at 0 minutes
 }
 
 
@@ -46,24 +53,29 @@ void loop() {
     Wire.begin();
     Serial.begin(9600);
     // sensor.begin();
-    moistureValue = analogRead(analogInPin);           // read the moisture value:
+
+    Serial.print(F("i: "));                             // shows how many 5second loops have gone by
+    Serial.print(i);
+
+    Serial.print(F(" j: "));                             // shows how many 60second loops have gone by
+    Serial.print(j);
+
+
+    moistureValue = analogRead(analogInPin);            // read the moisture value:
      
-    Serial.print("Soilwatch: ");
-    Serial.print("ADC = " );                           // print ADC results to the serial monitor:
+    Serial.print(F("    Soilwatch: "));
+    Serial.print(F("ADC = " ));                         // print ADC results to the serial monitor:
     Serial.print(moistureValue);
-    Serial.print(", " );
+    Serial.print(F(", " ));
      
     mappedValue = map(moistureValue, minADC, maxADC, 0, 100); 
     
-    Serial.print("Mapped = " );                       // print mapped results to the serial monitor:
-    Serial.println(mappedValue);
+    Serial.print(F("Mapped = " ));                       // print mapped results to the serial monitor:
+    Serial.print(mappedValue);
 
 
-    Serial.print("      Catnip: ");
+    Serial.print(F("      Catnip: "));
     CatnipmoistureValue = sensor.getCapacitance();
-
-    // Serial.print(" ADC: ");
-    // Serial.print(CatnipmoistureValue);                  // reads analog SDA pin
 
     Serial.print(" Capacitance: ");
     Serial.print(sensor.getCapacitance());              //read capacitance register
@@ -72,7 +84,27 @@ void loop() {
 
     Serial.print(" Mapped = ");
     Serial.print(Catnipmappedvalue);
-    Serial.println("      ");
+    Serial.print("      ");
 
-    delay(1500);                                        // wait 500 milliseconds and then repeat
+    
+    delay(5000);                                        // wait 5 seconds and then repeat
+
+    i++;
+
+    if (i%6 == 0){
+        Serial.print(i*5);
+        Serial.print(F("s reading"));
     }
+
+  
+
+    if (i%12 == 0){
+        j++;
+        Serial.print(F(" , "));
+        Serial.print(j);
+        Serial.print(F("min reading"));
+    }
+
+
+    Serial.println("");
+}
